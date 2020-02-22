@@ -3,6 +3,8 @@ const yaml = require("js-yaml");
 const PdfPrinter = require("pdfmake");
 const fs = require("fs");
 
+const DEFAULT_WATCH_INTERVAL = 1000;
+
 const fonts = {
   Roboto: {
     normal: "fonts/Roboto-Regular.ttf",
@@ -12,28 +14,61 @@ const fonts = {
   }
 };
 
+const printer = new PdfPrinter(fonts);
+
 const getFileName = path =>
   path
     .split(".")
     .slice(0, path.split(".").length - 1)
     .join(".");
 
+const readDef = path => yaml.safeLoad(fs.readFileSync(path, "utf8"));
+
+const generatePdf = (path, def) => {
+  const pdfDoc = printer.createPdfKitDocument(def);
+  pdfDoc.pipe(fs.createWriteStream(path));
+  pdfDoc.end();
+};
+
 program
   .option("-o, --out <path>", "Generated pdf file name")
   .option("-d, --debug", "Show debugging info")
-  .action(function({ out, debug }, [inputFile]) {
+  .option("-w, --watch [interval]", "Watch file for changes")
+  .action(function({ out, debug, watch }, [inputFile]) {
     const pdfFilePath = out ? out : `${getFileName(inputFile)}.pdf`;
-    const printer = new PdfPrinter(fonts);
-    try {
-      const defObj = yaml.safeLoad(fs.readFileSync(inputFile, "utf8"));
+
+    const makePdf = () => {
+      const def = readDef(inputFile);
       if (debug) {
-        console.log(JSON.stringify(defObj, null, 2));
+        console.log(JSON.stringify(def, null, 2));
       }
-      const pdfDoc = printer.createPdfKitDocument(defObj);
-      pdfDoc.pipe(fs.createWriteStream(pdfFilePath));
-      pdfDoc.end();
+      generatePdf(pdfFilePath, def);
+    };
+
+    try {
+      makePdf();
     } catch (e) {
       console.error(e);
+    }
+
+    if (watch) {
+      console.log("Watching for changes ...");
+      const interval = isNaN(parseInt(watch))
+        ? DEFAULT_WATCH_INTERVAL
+        : parseInt(watch);
+      try {
+        fs.watchFile(inputFile, { interval }, () => {
+          console.log("Input changed, building PDF ...");
+          try {
+            makePdf();
+          } catch (e) {
+            console.error(e);
+          }
+          console.log("... Success");
+        });
+      } catch (e) {
+        console.log(e);
+      }
     }
   });
 
