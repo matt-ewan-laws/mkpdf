@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const program = require("commander");
 const yaml = require("js-yaml");
 const PdfPrinter = require("pdfmake");
