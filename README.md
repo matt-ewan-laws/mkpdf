@@ -22,6 +22,8 @@ npm i -g .
 
 ## How to use
 
+TODO: create examples
+
     Usage: mkpdf <input.yaml> [options]
 
     Options:
