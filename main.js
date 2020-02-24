@@ -13,6 +13,9 @@ const fonts = {
     bold: "fonts/Roboto-Medium.ttf",
     italics: "fonts/Roboto-Italic.ttf",
     bolditalics: "fonts/Roboto-MediumItalic.ttf"
+  },
+  Mauritius: {
+    regular: "fonts/Mauritius Becker Regular.ttf"
   }
 };
 
