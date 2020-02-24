@@ -35,15 +35,33 @@ const generatePdf = (path, def) => {
   pdfDoc.end();
 };
 
+/**
+ * TODO this smells bad, replace with more functional
+ */
+const addNumberDef = (def, start) =>
+  (def.footer = currentPage =>
+    currentPage >= start
+      ? {
+          text: currentPage.toString(),
+          alignment: "center"
+        }
+      : "");
+
 program
   .option("-o, --out <path>", "Generated pdf file name")
   .option("-d, --debug", "Show debugging info")
   .option("-w, --watch [interval]", "Watch file for changes")
-  .action(function({ out, debug, watch }, [inputFile]) {
+  .option("-n, --numbered [start]", "Number pages")
+  .action(function({ out, debug, watch, numbered }, [inputFile]) {
     const pdfFilePath = out ? out : `${getFileName(inputFile)}.pdf`;
 
     const makePdf = () => {
       const def = readDef(inputFile);
+      if (numbered) {
+        const parsed = parseInt(numbered, 10);
+        const numberStart = isNaN(parsed) ? 0 : parsed;
+        addNumberDef(def, numberStart);
+      }
       if (debug) {
         console.log(JSON.stringify(def, null, 2));
       }
