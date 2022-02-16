@@ -12,8 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "commander": "^4.1.1",
-    "js-yaml": "^3.13.1",
-    "pdfmake": "^0.1.64"
+    "commander": "^9.0.0",
+    "js-yaml": "^4.1.0",
+    "pdfmake": "^0.2.4"
   }
 }
